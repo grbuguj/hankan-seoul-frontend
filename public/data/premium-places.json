@@ -1,0 +1,16 @@
+[
+  {"id": "hongdae",  "name": "홍대",    "parentGu": "마포구",   "guCode": "11140", "lat": 37.5563, "lng": 126.9231, "price": 20000, "emoji": "🎵"},
+  {"id": "hapjeong", "name": "합정",    "parentGu": "마포구",   "guCode": "11140", "lat": 37.5494, "lng": 126.9133, "price": 20000, "emoji": "🍺"},
+  {"id": "mangwon",  "name": "망원",    "parentGu": "마포구",   "guCode": "11140", "lat": 37.5557, "lng": 126.9023, "price": 20000, "emoji": "🌊"},
+  {"id": "gangnam",  "name": "강남역",  "parentGu": "강남구",   "guCode": "11230", "lat": 37.4979, "lng": 127.0276, "price": 20000, "emoji": "💎"},
+  {"id": "apgujeong","name": "압구정",  "parentGu": "강남구",   "guCode": "11230", "lat": 37.5270, "lng": 127.0286, "price": 20000, "emoji": "👑"},
+  {"id": "cheongdam","name": "청담",    "parentGu": "강남구",   "guCode": "11230", "lat": 37.5234, "lng": 127.0535, "price": 20000, "emoji": "✨"},
+  {"id": "itaewon",  "name": "이태원",  "parentGu": "용산구",   "guCode": "11030", "lat": 37.5341, "lng": 126.9947, "price": 20000, "emoji": "🌍"},
+  {"id": "hannam",   "name": "한남",    "parentGu": "용산구",   "guCode": "11030", "lat": 37.5343, "lng": 127.0029, "price": 20000, "emoji": "🏙️"},
+  {"id": "seongsu",  "name": "성수",    "parentGu": "성동구",   "guCode": "11040", "lat": 37.5445, "lng": 127.0565, "price": 20000, "emoji": "🏭"},
+  {"id": "bukchon",  "name": "북촌",    "parentGu": "종로구",   "guCode": "11010", "lat": 37.5820, "lng": 126.9821, "price": 20000, "emoji": "🏯"},
+  {"id": "insadong", "name": "인사동",  "parentGu": "종로구",   "guCode": "11010", "lat": 37.5742, "lng": 126.9853, "price": 20000, "emoji": "🎨"},
+  {"id": "sinchon",  "name": "신촌",    "parentGu": "서대문구", "guCode": "11130", "lat": 37.5554, "lng": 126.9366, "price": 20000, "emoji": "🎓"},
+  {"id": "kondae",   "name": "건대입구","parentGu": "광진구",   "guCode": "11050", "lat": 37.5404, "lng": 127.0697, "price": 20000, "emoji": "🎭"},
+  {"id": "jamsil",   "name": "잠실",    "parentGu": "송파구",   "guCode": "11240", "lat": 37.5134, "lng": 127.1002, "price": 20000, "emoji": "🎡"}
+]

@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --red: #e63946;
+  --red-dark: #c1121f;
+  --cream: #f5f2ee;
+  --ink: #111111;
+  --muted: #888888;
+  --border: #e0dbd4;
+}
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: #ffffff;
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+#root { min-height: 100vh; }
+
+@keyframes glow-pulse {
+  0%, 100% { filter: drop-shadow(0 0 4px #e63946) drop-shadow(0 0 8px #e63946); opacity: 0.9; }
+  50%       { filter: drop-shadow(0 0 12px #e63946) drop-shadow(0 0 24px #ff6b6b); opacity: 1; }
+}
+@keyframes ring-expand {
+  0%   { r: 8;  opacity: 0.8; }
+  100% { r: 18; opacity: 0;   }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0);   }
+  50%       { transform: translateY(-6px);}
+}
+
+.premium-glow   { animation: glow-pulse 2s ease-in-out infinite; }
+.premium-ring   { animation: ring-expand 1.8s ease-out infinite; }
+.float-anim     { animation: float 3s ease-in-out infinite; }
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.2; }
+}
+@keyframes premium-dash {
+  0%   { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -40; }
+}
+
+@keyframes premium-glow-pulse {
+  0%, 100% { opacity: 0.6; stroke-width: 1.5px; }
+  50%       { opacity: 1;   stroke-width: 2.8px; }
+}
+
+.premium-border {
+  stroke-dasharray: 6 4;
+  animation: premium-dash 1s linear infinite, premium-glow-pulse 1.8s ease-in-out infinite;
+  filter: drop-shadow(0 0 3px #e63946);
+}
