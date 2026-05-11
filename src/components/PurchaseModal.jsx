@@ -5,7 +5,7 @@ import { submitDongSquare, uploadImage as uploadImageApi } from '../api/index';
 import Compressor from 'compressorjs';
 
 const ACCOUNT = '카카오뱅크 3333-12-3456789 (예금주: 한칸서울)';
-const TWO_WEEKS_MS = 14 * 24 * 60 * 60 * 1000;
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
 const S = {
   overlay: {
@@ -50,7 +50,7 @@ function useCountdown(createdAt) {
   const [remaining, setRemaining] = useState('');
   useEffect(() => {
     if (!createdAt) return;
-    const end = new Date(createdAt).getTime() + TWO_WEEKS_MS;
+    const end = new Date(createdAt).getTime() + THIRTY_DAYS_MS;
     function tick() {
       const diff = end - Date.now();
       if (diff <= 0) { setRemaining('만료됨'); return; }
@@ -318,7 +318,7 @@ export default function PurchaseModal({ target, onClose }) {
             }}>
               <div>
                 <span style={{ fontSize: '12px', color: '#999' }}>결제 금액</span>
-                <span style={{ fontSize: '11px', color: '#bbb', marginLeft: '8px' }}>2주 게시</span>
+                <span style={{ fontSize: '11px', color: '#bbb', marginLeft: '8px' }}>1달 게시</span>
               </div>
               <span style={{ fontSize: '18px', fontWeight: 900, color: '#e63946' }}>{price.toLocaleString()}원</span>
             </div>
