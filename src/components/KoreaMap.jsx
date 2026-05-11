@@ -13,12 +13,10 @@ const COLOR = {
   empty:              '#e2e4e8',
   emptyStroke:        '#c8cace',
   hover:              '#d0d3d8',
-  pending:            '#ffb347',
-  pendingStroke:      '#e8962a',
-  confirmed:          '#e63946',
-  confirmedStroke:    '#c1121f',
-  premiumEmpty:       '#e2e4e8',   // 일반 칸과 동일한 회색
-  premiumEmptyStroke: '#e63946',
+  confirmed:          '#4a6fa5',
+  confirmedStroke:    '#3a5a8a',
+  premiumEmpty:       '#e2e4e8',
+  premiumEmptyStroke: '#c8cace',
   premiumHover:       '#d0d3d8',
   guBorder:           '#9aa0a8',
   guLabel:            '#444',
@@ -34,7 +32,7 @@ const GU_NAMES = {
   '1125': '강동구',
 };
 
-export default function KoreaMap({ onSelectDong, mapRef, showGuNames = true }) {
+export default function KoreaMap({ onSelectDong, mapRef, showGuNames = true, onReady }) {
   const { dongSquares } = useSquares();
   const [geoData, setGeoData]         = useState(null);
   const [guData, setGuData]            = useState(null);
@@ -57,6 +55,14 @@ export default function KoreaMap({ onSelectDong, mapRef, showGuNames = true }) {
       setGeoData(dong);
       setGuData(gu);
       setRiverBorder(river);
+      // 검색 기능용 동 목록 전달
+      if (onReady) {
+        const dongList = dong.features.map(f => ({
+          code: f.properties.code,
+          name: f.properties.name,
+        }));
+        onReady({ dongList, focusDong: (code) => focusDongByCode(code, dong, proj) });
+      }
     });
   }, []);
 
@@ -75,6 +81,24 @@ export default function KoreaMap({ onSelectDong, mapRef, showGuNames = true }) {
   }, []);
 
   const pathGen = projection ? d3.geoPath().projection(projection) : null;
+
+  function focusDongByCode(code, dongData, proj) {
+    const feat = dongData.features.find(f => f.properties.code === code);
+    if (!feat || !svgRef.current || !zoomRef.current) return;
+    const path = d3.geoPath().projection(proj);
+    const [[x0, y0], [x1, y1]] = path.bounds(feat);
+    const cx = (x0 + x1) / 2;
+    const cy = (y0 + y1) / 2;
+    const scale = Math.min(8, 0.9 / Math.max((x1 - x0) / W, (y1 - y0) / H));
+    const tx = W / 2 - scale * cx;
+    const ty = H / 2 - scale * cy;
+    const { zoomIdentity: zi } = { zoomIdentity };
+    select(svgRef.current)
+      .transition().duration(600)
+      .call(zoomRef.current.transform,
+        zi.translate(tx, ty).scale(scale)
+      );
+  }
 
   const guCentroids = useMemo(() => {
     if (!geoData || !pathGen) return {};
@@ -250,7 +274,7 @@ export default function KoreaMap({ onSelectDong, mapRef, showGuNames = true }) {
                 d={pathGen(feat)}
                 fill="none"
                 stroke="#e63946"
-                strokeWidth={2}
+                strokeWidth={1.2}
                 className="premium-border"
                 style={{ pointerEvents: 'none' }}
               />

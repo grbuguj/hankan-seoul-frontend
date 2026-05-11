@@ -1,6 +1,5 @@
-@import "tailwindcss";
-
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
+@import "tailwindcss";
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -49,12 +48,12 @@ body {
 }
 
 @keyframes premium-glow-pulse {
-  0%, 100% { opacity: 0.6; stroke-width: 1.5px; }
-  50%       { opacity: 1;   stroke-width: 2.8px; }
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 1; }
 }
 
 .premium-border {
-  stroke-dasharray: 6 4;
-  animation: premium-dash 1s linear infinite, premium-glow-pulse 1.8s ease-in-out infinite;
-  filter: drop-shadow(0 0 3px #e63946);
+  stroke-dasharray: 6 3;
+  animation: premium-dash 1.2s linear infinite, premium-glow-pulse 2s ease-in-out infinite;
+  filter: drop-shadow(0 0 2px rgba(230,57,70,0.7));
 }

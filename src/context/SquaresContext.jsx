@@ -1,4 +1,5 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
+import { fetchDongSquares } from '../api/index';
 import { MOCK_DONG_SQUARES } from '../data/mockData';
 
 const SquaresContext = createContext(null);
@@ -6,8 +7,16 @@ const SquaresContext = createContext(null);
 export function SquaresProvider({ children }) {
   const [dongSquares, setDongSquares] = useState(MOCK_DONG_SQUARES);
 
-  function purchaseDong(dongCode, data) {
-    // 신청만 접수 - 지도에는 반영 안 함
+  useEffect(() => {
+    fetchDongSquares().then(data => {
+      if (data && Object.keys(data).length > 0) {
+        setDongSquares(data);
+      }
+    });
+  }, []);
+
+  function purchaseDong() {
+    // 신청은 PurchaseModal에서 직접 API 호출
     // 관리자 confirmed 후에만 지도에 표시됨
   }
 

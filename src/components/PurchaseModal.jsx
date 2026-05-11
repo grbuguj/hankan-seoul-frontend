@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useSquares } from '../context/SquaresContext';
 import { PREMIUM_DONG_LABELS } from '../data/mockData';
+import { submitDongSquare, uploadImage as uploadImageApi } from '../api/index';
 import Compressor from 'compressorjs';
 
 const ACCOUNT = '카카오뱅크 3333-12-3456789 (예금주: 한칸서울)';
@@ -65,73 +66,146 @@ function useCountdown(createdAt) {
   return remaining;
 }
 
+// 외부 링크 이동 전 확인 팝업
+function ExternalLinkModal({ url, onConfirm, onCancel }) {
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 100,
+      background: 'rgba(0,0,0,0.6)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: '20px',
+    }}>
+      <div style={{
+        background: '#fff', borderRadius: '14px',
+        padding: '24px', width: '100%', maxWidth: '340px',
+        boxShadow: '0 8px 40px rgba(0,0,0,0.2)',
+      }}>
+        <p style={{ fontSize: '16px', fontWeight: 900, color: '#111', marginBottom: '6px' }}>외부 링크로 이동합니다</p>
+        <p style={{ fontSize: '12px', color: '#888', marginBottom: '12px', lineHeight: 1.6 }}>
+          아래 주소로 연결됩니다.<br />신뢰할 수 있는 사이트인지 확인 후 이동하세요.
+        </p>
+        <div style={{
+          background: '#f5f5f5', borderRadius: '8px',
+          padding: '10px 12px', marginBottom: '18px',
+          fontSize: '11px', color: '#555',
+          wordBreak: 'break-all', lineHeight: 1.6,
+          border: '1px solid #e8e8e8',
+        }}>
+          🔗 {url}
+        </div>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button onClick={onCancel} style={{
+            flex: 1, padding: '11px', fontSize: '13px', fontWeight: 600,
+            background: '#f5f5f5', color: '#888',
+            border: 'none', borderRadius: '8px', cursor: 'pointer',
+          }}>취소</button>
+          <button onClick={onConfirm} style={{
+            flex: 2, padding: '11px', fontSize: '13px', fontWeight: 700,
+            background: '#111', color: '#fff',
+            border: 'none', borderRadius: '8px', cursor: 'pointer',
+          }}>이동하기</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SquareViewer({ target, onClose }) {
   const sq = target.existing;
   const createdAt = sq.createdAt || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
   const remaining = useCountdown(createdAt);
   const displayName = PREMIUM_DONG_LABELS[target.code] || target.name;
+  const [linkModal, setLinkModal] = useState(false);
 
   return (
-    <div>
-      <div style={{ marginBottom: '20px' }}>
-        {target.isPremium && (
-          <span style={{
-            display: 'inline-block', background: '#fffbea', color: '#b8860b',
-            fontSize: '10px', fontWeight: 700, padding: '3px 10px',
-            borderRadius: '20px', border: '1px solid #ffd700', marginBottom: '8px',
-          }}>⭐ 프리미엄 스팟</span>
-        )}
-        <h2 style={{ fontSize: '20px', fontWeight: 900, color: '#111', letterSpacing: '-0.03em' }}>
-          {displayName}
-        </h2>
+    <div style={{ margin: '-28px', borderRadius: '16px', overflow: 'hidden' }}>
+      {/* 풀와이드 이미지 */}
+      <div style={{ position: 'relative', width: '100%', height: '220px', background: '#111', overflow: 'hidden' }}>
+        {sq.imageUrl
+          ? <img src={sq.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain', background: '#111' }} />
+          : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #1a1a2e, #16213e)' }} />
+        }
         <div style={{
-          display: 'inline-flex', alignItems: 'center', gap: '5px', marginTop: '6px',
-          padding: '4px 10px', background: '#f5f2ee', borderRadius: '20px',
-          fontSize: '11px', color: '#888',
-        }}>
-          ⏱ {remaining || '계산 중...'}
+          position: 'absolute', inset: 0,
+          background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 50%)',
+        }} />
+        <button onClick={onClose} style={{
+          position: 'absolute', top: '12px', right: '12px',
+          background: 'rgba(0,0,0,0.4)', border: 'none', borderRadius: '50%',
+          width: '32px', height: '32px', color: '#fff', fontSize: '14px',
+          cursor: 'pointer', backdropFilter: 'blur(4px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>✕</button>
+        <div style={{ position: 'absolute', bottom: '14px', left: '16px', right: '16px' }}>
+          {target.isPremium && (
+            <span style={{
+              fontSize: '10px', fontWeight: 700, color: '#ffd700',
+              background: 'rgba(0,0,0,0.5)', padding: '2px 8px',
+              borderRadius: '20px', border: '1px solid rgba(255,215,0,0.4)',
+              marginBottom: '4px', display: 'inline-block',
+            }}>⭐ 프리미엄 스팟</span>
+          )}
+          <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', marginBottom: '2px' }}>{displayName}</p>
+          <h2 style={{ fontSize: '22px', fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+            {sq.ownerName}
+          </h2>
         </div>
       </div>
 
-      <div style={{ border: '1px solid #e8e2d9', borderRadius: '12px', overflow: 'hidden', marginBottom: '16px' }}>
-        {sq.imageUrl && (
-          <div style={{ width: '100%', height: '160px', overflow: 'hidden' }}>
-            <img src={sq.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+      {/* 콘텐츠 */}
+      <div style={{ padding: '20px 20px 24px', background: '#fff' }}>
+        <p style={{ fontSize: '14px', color: '#555', marginBottom: '12px', lineHeight: 1.6 }}>
+          {sq.description}
+        </p>
+
+        {sq.message && (
+          <div style={{
+            background: '#f8f8f8', borderRadius: '10px',
+            padding: '12px 14px', marginBottom: '16px',
+            borderLeft: '3px solid #e63946',
+            fontSize: '13px', color: '#333', lineHeight: 1.7,
+            whiteSpace: 'pre-line',
+          }}>
+            {sq.message}
           </div>
         )}
-        <div style={{ padding: '16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-            {sq.imageUrl && (
-              <img src={sq.imageUrl} alt="" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
-            )}
-            <div>
-              <p style={{ fontSize: '15px', fontWeight: 900, color: '#111' }}>{sq.ownerName}</p>
-              <p style={{ fontSize: '12px', color: '#888' }}>{sq.description}</p>
-            </div>
-          </div>
-          {sq.message && (
-            <div style={{
-              background: '#faf9f7', borderRadius: '8px', padding: '10px 12px',
-              fontSize: '13px', color: '#444', lineHeight: 1.6,
-              whiteSpace: 'pre-line', marginBottom: '10px',
-              borderLeft: '3px solid #e63946',
-            }}>
-              {sq.message}
-            </div>
-          )}
-          {sq.link && (
-            <a href={sq.link} target="_blank" rel="noreferrer"
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: '#e63946', textDecoration: 'none', fontWeight: 600 }}>
-              🔗 바로가기
-            </a>
-          )}
+
+        {/* CTA 버튼 - 클릭 시 확인 팝업 */}
+        {sq.link && (
+          <button
+            onClick={() => setLinkModal(true)}
+            style={{
+              display: 'block', width: '100%',
+              padding: '13px', marginBottom: '12px',
+              background: '#111', color: '#fff',
+              borderRadius: '10px', textAlign: 'center',
+              fontSize: '14px', fontWeight: 700,
+              border: 'none', cursor: 'pointer',
+              letterSpacing: '0.02em', boxSizing: 'border-box',
+            }}
+          >
+            🔗 바로가기
+          </button>
+        )}
+
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: '11px', color: '#bbb' }}>⏱ {remaining || '계산 중...'}</span>
+          <button onClick={onClose} style={{
+            padding: '8px 18px', fontSize: '12px', fontWeight: 600,
+            background: '#f5f5f5', color: '#888',
+            border: 'none', borderRadius: '8px', cursor: 'pointer',
+          }}>닫기</button>
         </div>
       </div>
 
-      <div style={{ background: '#faf9f7', border: '1px solid #e8e2d9', borderRadius: '8px', padding: '10px 14px', fontSize: '11px', color: '#aaa', marginBottom: '16px' }}>
-        이 칸은 현재 점령 중입니다. 점령이 해제되면 선점할 수 있습니다.
-      </div>
-      <button style={S.btn(false)} onClick={onClose}>닫기</button>
+      {/* 외부 링크 확인 팝업 */}
+      {linkModal && (
+        <ExternalLinkModal
+          url={sq.link}
+          onConfirm={() => { window.open(sq.link, '_blank', 'noopener,noreferrer'); setLinkModal(false); }}
+          onCancel={() => setLinkModal(false)}
+        />
+      )}
     </div>
   );
 }
@@ -143,6 +217,7 @@ export default function PurchaseModal({ target, onClose }) {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const fileRef = useRef();
 
   const price = target.isPremium ? 30000 : 10000;
@@ -159,19 +234,41 @@ export default function PurchaseModal({ target, onClose }) {
 
   async function handleSubmit() {
     setLoading(true);
-    let imageUrl = imagePreview || '';
-    const data = { ...form, imageUrl, name: displayName };
-    purchaseDong(target.code, data);
-    setLoading(false);
-    setStep(3);
+    setError('');
+    try {
+      let imageUrl = '';
+      if (imageFile) {
+        imageUrl = await uploadImageApi(imageFile);
+      }
+      await submitDongSquare({
+        dongCode: target.code,
+        name: displayName,
+        isPremium: target.isPremium || false,
+        ownerName: form.ownerName,
+        description: form.description,
+        message: form.message || '',
+        link: form.link || '',
+        imageUrl,
+        depositorName: form.depositorName,
+      });
+      setStep(3);
+    } catch (e) {
+      console.error('신청 실패', e);
+      setError(e.message || '신청 중 오류가 발생했습니다. 다시 시도해주세요.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
     <div style={S.overlay} onClick={e => e.target === e.currentTarget && onClose()}>
       <div style={S.modal}>
-        <button style={S.close} onClick={onClose}>✕</button>
 
         {isAlreadyPurchased && <SquareViewer target={target} onClose={onClose} />}
+
+        {!isAlreadyPurchased && (
+          <button style={S.close} onClick={onClose}>✕</button>
+        )}
 
         {!isAlreadyPurchased && step === 1 && (
           <>
@@ -192,7 +289,8 @@ export default function PurchaseModal({ target, onClose }) {
             <div style={{ display: 'flex', gap: '14px', marginBottom: '12px', alignItems: 'flex-start' }}>
               <div onClick={() => fileRef.current?.click()} style={{
                 width: '72px', height: '72px', borderRadius: '50%', flexShrink: 0,
-                border: '2px dashed #ddd', background: '#faf9f7',
+                border: imagePreview ? '2px solid #e63946' : '2px dashed #e63946',
+                background: '#fff5f5',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 cursor: 'pointer', overflow: 'hidden', fontSize: '20px',
               }}>
@@ -225,11 +323,14 @@ export default function PurchaseModal({ target, onClose }) {
               <span style={{ fontSize: '18px', fontWeight: 900, color: '#e63946' }}>{price.toLocaleString()}원</span>
             </div>
 
-            <button style={{ ...S.btn(true), opacity: (!form.ownerName.trim() || !form.description.trim()) ? 0.4 : 1 }}
-              disabled={!form.ownerName.trim() || !form.description.trim()}
+            <button style={{ ...S.btn(true), opacity: (!form.ownerName.trim() || !form.description.trim() || !imageFile) ? 0.4 : 1 }}
+              disabled={!form.ownerName.trim() || !form.description.trim() || !imageFile}
               onClick={() => setStep(2)}>
               다음 →
             </button>
+            {!imageFile && (
+              <p style={{ fontSize: '11px', color: '#e63946', textAlign: 'center', marginTop: '8px' }}>📷 이미지를 등록해야 다음으로 넘어갈 수 있어요</p>
+            )}
           </>
         )}
 
@@ -265,6 +366,12 @@ export default function PurchaseModal({ target, onClose }) {
               value={form.depositorName}
               onChange={e => setForm(f => ({ ...f, depositorName: e.target.value }))} />
 
+            {error && (
+              <div style={{ background: '#fff5f5', border: '1px solid #fcc', borderRadius: '8px', padding: '10px 14px', marginBottom: '10px', fontSize: '12px', color: '#e63946' }}>
+                {error}
+              </div>
+            )}
+
             <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
               <button style={{ ...S.btn(false), flex: 1, width: 'auto', padding: '12px 20px' }} onClick={() => setStep(1)}>← 이전</button>
               <button style={{ ...S.btn(true), flex: 2, opacity: (!form.depositorName.trim() || loading) ? 0.4 : 1 }}
@@ -276,7 +383,7 @@ export default function PurchaseModal({ target, onClose }) {
           </>
         )}
 
-        {step === 3 && (
+        {!isAlreadyPurchased && step === 3 && (
           <div style={{ textAlign: 'center', padding: '20px 0' }}>
             <p style={{ fontSize: '40px', marginBottom: '14px' }} className="float-anim">✅</p>
             <h2 style={{ fontSize: '20px', fontWeight: 900, color: '#111', marginBottom: '8px' }}>신청 완료!</h2>
